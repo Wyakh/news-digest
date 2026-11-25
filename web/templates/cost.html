@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Cost — News Digest{% endblock %}
+
+{% block content %}
+<h1>Cost</h1>
+
+{% if not has_data %}
+<p>No cost data yet. Run the AI engine at least once.</p>
+{% else %}
+
+<h2>Last 30 days</h2>
+<p>
+    Runs: {{ last_30_count }}<br>
+    Total: ${{ '%.4f' | format(last_30_total) }}<br>
+    Average per run: ${{ '%.4f' | format(last_30_avg) }}
+</p>
+
+<h2>Last 5 runs</h2>
+<p>
+    Average per run: ${{ '%.4f' | format(last_5_avg) }}
+    <span style="color:#888;">({{ last_5_count }} run{% if last_5_count != 1 %}s{% endif %} included)</span>
+</p>
+
+<h2>Most recent runs</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Run</th>
+            <th>Time (UTC)</th>
+            <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in last_3 %}
+        <tr>
+            <td>{{ r.run_id }}</td>
+            <td>
+                {% if r.timestamp %}
+                    {{ r.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>${{ '%.4f' | format(r.cost) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Status — News Digest{% endblock %}
+
+{% block content %}
+<h1>Status</h1>
+
+<h2>Scrape health (most recent run)</h2>
+
+{% if sources %}
+<table>
+    <thead>
+        <tr>
+            <th>Source</th>
+            <th>Headlines</th>
+            <th>State</th>
+            <th>Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sources %}
+        <tr>
+            <td>{{ s.source }}</td>
+            <td>{{ s.headlines_found }}</td>
+            <td>
+                {% if not s.success %}
+                    Failed{% if s.error %} — {{ s.error }}{% endif %}
+                {% elif s.warning %}
+                    Warning
+                {% else %}
+                    OK
+                {% endif %}
+            </td>
+            <td>{{ s.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No scrape status available yet. Run <code>scraper.py</code> first.</p>
+{% endif %}
+
+<h2>Latest AI run</h2>
+
+{% if latest_summary %}
+<p><strong>{{ latest_summary.run_id }}</strong></p>
+<pre>{{ latest_summary.text }}</pre>
+{% else %}
+<p>No AI run summary available yet.</p>
+{% endif %}
+{% endblock %}

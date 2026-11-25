@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{ run_id }} raw — News Digest{% endblock %}
+
+{% block content %}
+<style>
+.story-card {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 0.8em 1.2em;
+    margin: 1em 0;
+    border-radius: 3px;
+    font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 10.5pt;
+}
+.story-card h3 {
+    margin: 0 0 0.4em 0;
+    border: none;
+    font-size: 12pt;
+}
+.story-card .flag-row {
+    color: #555;
+    font-size: 10pt;
+    margin-bottom: 0.5em;
+}
+.story-card .flag-row code {
+    background: #efefef;
+    padding: 0.05em 0.4em;
+    border-radius: 2px;
+    margin-right: 0.3em;
+    font-size: 9.5pt;
+}
+.tier-primary   { border-left: 4px solid #1a4a8a; }
+.tier-secondary { border-left: 4px solid #888; }
+.tier-signal    { border-left: 4px solid #ccc; }
+.story-card ul.sources {
+    margin: 0.4em 0 0;
+    padding-left: 1.4em;
+    font-size: 10pt;
+}
+.story-card ul.sources li { margin-bottom: 0.2em; }
+.tier-jump {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 0.6em 1em;
+    margin: 1em 0;
+    border-radius: 3px;
+    font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 10.5pt;
+}
+.story-card details > summary {
+    cursor: pointer;
+    color: #1a4a8a;
+    font-size: 10pt;
+    margin-top: 0.3em;
+}
+.story-card pre {
+    background: #fff;
+    border: 1px solid #eee;
+    padding: 0.5em 0.7em;
+    font-size: 9pt;
+    overflow-x: auto;
+    margin-top: 0.4em;
+}
+</style>
+
+<h1>Raw structured data — {{ run_id }}</h1>
+
+<p><a href="{{ url_for('digest', run_id=run_id) }}">← Back to rendered digest</a></p>
+
+{% if not stories %}
+<p>No stories found in this run.</p>
+{% else %}
+
+<div class="tier-jump">
+    Total stories: {{ stories|length }} ·
+    Primary: {{ tier_counts.primary }} ·
+    Secondary: {{ tier_counts.secondary }} ·
+    Signal: {{ tier_counts.signal }}
+    &nbsp;|&nbsp;
+    Developing: {{ flag_counts.developing }} ·
+    No-new-info: {{ flag_counts.no_new_info }} ·
+    Significant escalation: {{ flag_counts.significant }} ·
+    Was-signal-in-past: {{ flag_counts.was_signal }}
+</div>
+
+{% for s in stories %}
+<div class="story-card tier-{{ s.tier }}">
+    <h3>{{ s.canonical_title }}</h3>
+    <div class="flag-row">
+        <code>{{ s.tier }}</code>
+        {% if s.is_developing %}<code>developing</code>{% endif %}
+        {% if s.no_new_info %}<code>no_new_info</code>{% endif %}
+        {% if s.is_continuation_significant %}<code>significant</code>{% endif %}
+        {% if s.was_signal_in_past %}<code>was_signal_in_past</code>{% endif %}
+        {% if s.ecosystems_present %}
+            · ecosystems: {{ s.ecosystems_present|join(', ') }}
+        {% endif %}
+    </div>
+
+    {% if s.previous_reference_run %}
+    <div class="flag-row" style="font-style: italic;">
+        Continuing from <a href="{{ url_for('digest', run_id=s.previous_reference_run) }}">{{ s.previous_reference_run }}</a>:
+        "{{ s.previous_reference_title }}"
+    </div>
+    {% endif %}
+
+    {% if s.tags %}
+    <div class="flag-row"><strong>Tags:</strong> {{ s.tags|join(', ') }}</div>
+    {% endif %}
+
+    {% if s.sources %}
+    <details>
+        <summary>{{ s.sources|length }} source(s)</summary>
+        <ul class="sources">
+            {% for src in s.sources %}
+            <li>
+                <strong>{{ src.media }}</strong>
+                {% if src.id %}<span style="color:#888;">[{{ src.id }}]</span>{% endif %}
+                — {% if src.url %}<a href="{{ src.url }}" target="_blank" rel="noopener">{{ src.title }}</a>{% else %}{{ src.title }}{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+
+    <details>
+        <summary>Raw JSON</summary>
+        <pre>{{ s | tojson(indent=2) }}</pre>
+    </details>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

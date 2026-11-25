@@ -1,0 +1,41 @@
+# Private runtime state and credentials; examples are intentionally separate.
+/config/
+/data/
+/web/backups/
+/venv/
+/.venv/
+.env
+.env.*
+*.lnk
+*.log
+*.db
+*.sqlite*
+*.bak
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+*.egg-info/
+build/
+dist/
+# Build launcher locally; source release never bundles executables.
+/NewsDigest.exe
+# Private original notes/archived adapters, not the maintained runtime source.
+/_descriptions/
+/_past_files/
+/scrapers/method_reuters old.py
+# Original saved Settings browser pages can contain private editor content.
+/scrapers/*.html
+/scrapers/*_files/
+# Local account guidance, migration rollback and source archives.
+/.local/
+.migration-backup/
+*.zip
+*.7z
+*.tar
+*.tar.gz
+# Retired temporary harnesses are deliberately not part of this project.
+/tests/
+/test_*.py
+/*_test.py
+/.pytest_cache/

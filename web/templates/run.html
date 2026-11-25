@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}Run — News Digest{% endblock %}
+
+{% block content %}
+<style>
+.run-controls {
+    margin: 1em 0 2em;
+    display: flex;
+    gap: 0.6em;
+    flex-wrap: wrap;
+}
+.run-btn {
+    padding: 0.6em 1.2em;
+    font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 11pt;
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 3px;
+}
+.run-btn:hover:not(:disabled) {
+    background: #e8e8e8;
+}
+.run-btn:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+.status-panel {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 1em 1.2em;
+    margin: 1em 0;
+    border-radius: 3px;
+}
+.status-panel p { margin: 0.3em 0; }
+.status-panel pre {
+    background: #fff;
+    border: 1px solid #eee;
+    margin: 0.6em 0 0;
+    max-height: 220px;
+    overflow-y: auto;
+    font-size: 9.5pt;
+    padding: 0.6em;
+}
+.modal-bg {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.modal-bg.visible { display: flex; }
+.modal {
+    background: #fff;
+    padding: 1.5em 1.8em;
+    max-width: 540px;
+    border-radius: 4px;
+    font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+}
+.modal h2 {
+    margin-top: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    font-size: 14pt;
+}
+.modal-actions {
+    margin-top: 1.2em;
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+}
+.muted { color: #888; font-size: 10pt; }
+</style>
+
+<h1>Run</h1>
+
+<div class="run-controls">
+    <button class="run-btn" data-job="scraper">Scraper only</button>
+    <button class="run-btn" data-job="ai">AI digest only</button>
+    <button class="run-btn" data-job="both">Scraper + AI</button>
+</div>
+
+<div class="run-controls" style="margin-top: -1em;">
+    <button class="run-btn" id="delete-latest-ai-btn"
+            style="background: #fdf3f3; border-color: #d9b3b3;">
+        Delete most recent AI digest
+    </button>
+</div>
+
+<div id="status-panel" class="status-panel">
+    <p class="muted">Loading status…</p>
+</div>
+
+<div id="modal-bg" class="modal-bg">
+    <div class="modal">
+        <h2>Recent run within 12 hours</h2>
+        <p id="modal-message"></p>
+        <p class="muted">
+            <strong>Override</strong>: previous run's files are deleted.<br>
+            <strong>Proceed without override</strong>: previous run is kept; new run saved alongside.
+        </p>
+        <div class="modal-actions">
+            <button class="run-btn" id="modal-override">Override</button>
+            <button class="run-btn" id="modal-no-override">Proceed without override</button>
+            <button class="run-btn" id="modal-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const statusPanel = document.getElementById('status-panel');
+const modalBg = document.getElementById('modal-bg');
+const modalMessage = document.getElementById('modal-message');
+const buttons = document.querySelectorAll('.run-btn[data-job]');
+
+let pendingJob = null;
+let pollTimer = null;
+
+// ── Button click → precheck ─────────────────────────────────────────────
+buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const job = btn.dataset.job;
+        try {
+            const r = await fetch(`/run/precheck?job=${job}`);
+            const data = await r.json();
+            if (data.needs_confirm) {
+                showModal(job, data);
+            } else {
+                startJob(job, 'auto');
+            }
+        } catch (e) {
+            alert('Pre-check failed: ' + e);
+        }
+    });
+});
+
+function showModal(job, p) {
+    pendingJob = job;
+    let parts = [];
+    if (p.scraper_within_12h) {
+        parts.push(`Most recent <strong>scrape</strong>: ${p.scraper_age_hours} hours ago`);
+    }
+    if (p.ai_within_12h) {
+        parts.push(`Most recent <strong>AI digest</strong>: ${p.ai_age_hours} hours ago`);
+    }
+    let scope = '';
+    if (p.scraper_within_12h && p.ai_within_12h) {
+        scope = 'Both the scraper and AI digest have recent runs.';
+    } else if (p.scraper_within_12h) {
+        scope = 'Only the scraper has a recent run. The AI digest will run fresh.';
+    } else {
+        scope = 'Only the AI digest has a recent run. The scraper will run fresh.';
+    }
+    modalMessage.innerHTML = parts.join('<br>') + `<br><br>${scope}<br><br>How should this run handle the recent file?`;
+    modalBg.classList.add('visible');
+}
+
+function hideModal() {
+    modalBg.classList.remove('visible');
+    pendingJob = null;
+}
+
+document.getElementById('modal-override').addEventListener('click', () => {
+    if (pendingJob) startJob(pendingJob, 'override');
+    hideModal();
+});
+document.getElementById('modal-no-override').addEventListener('click', () => {
+    if (pendingJob) startJob(pendingJob, 'no_override');
+    hideModal();
+});
+document.getElementById('modal-cancel').addEventListener('click', hideModal);
+
+// ── Start job ───────────────────────────────────────────────────────────
+async function startJob(job, override) {
+    try {
+        const r = await fetch('/run/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job, override }),
+        });
+        const data = await r.json();
+        if (!data.ok) {
+            alert('Could not start: ' + data.message);
+            return;
+        }
+        pollOnce();
+    } catch (e) {
+        alert('Start failed: ' + e);
+    }
+}
+
+// ── Polling ─────────────────────────────────────────────────────────────
+async function pollOnce() {
+    try {
+        const r = await fetch('/run/status');
+        const data = await r.json();
+        renderStatus(data);
+        buttons.forEach(b => b.disabled = data.active);
+        if (data.active && !pollTimer) {
+            pollTimer = setInterval(pollOnce, 2000);
+        } else if (!data.active && pollTimer) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+    } catch (e) {
+        statusPanel.innerHTML = '<p class="muted">Status fetch error: ' + e + '</p>';
+    }
+}
+
+function renderStatus(d) {
+    if (!d.job && !d.active) {
+        statusPanel.innerHTML = '<p class="muted">No run in progress. Click a button above to start.</p>';
+        return;
+    }
+    let parts = [];
+    if (d.active) {
+        let phaseText = (d.phase && d.job === 'both') ? ` (phase: ${d.phase})` : '';
+        parts.push(`<strong>Running:</strong> ${d.job}${phaseText}`);
+        parts.push(`<strong>Elapsed:</strong> ${d.elapsed_seconds || 0}s`);
+        if (d.override_mode === 'no_override') {
+            parts.push(`<strong>Mode:</strong> no-override (keep both)`);
+        } else if (d.override_mode === 'override') {
+            parts.push(`<strong>Mode:</strong> override (overwrite)`);
+        }
+        // 'auto' = no modal was shown; no Mode line displayed
+    } else {
+        let label;
+        if (d.exit_code === 0) label = '✓ Completed';
+        else if (d.exit_code === null) label = 'Unknown state';
+        else label = `✗ Failed (exit ${d.exit_code})`;
+        parts.push(`<strong>${label}</strong>: ${d.job}`);
+        if (d.elapsed_seconds != null) parts.push(`<strong>Took:</strong> ${d.elapsed_seconds}s`);
+        if (d.error_msg) parts.push(`<strong>Error:</strong> ${d.error_msg}`);
+        if (d.result_link) parts.push(`<a href="${d.result_link.url}">${d.result_link.label}</a>`);
+    }
+    let html = parts.map(p => `<p>${p}</p>`).join('');
+    if (d.log_tail && d.log_tail.length) {
+        const escaped = d.log_tail
+            .map(l => l.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'))
+            .join('\n');
+        html += `<pre>${escaped}</pre>`;
+    }
+    statusPanel.innerHTML = html;
+}
+
+// Initial state load
+pollOnce();
+
+// ── Delete most recent AI run ───────────────────────────────────────────
+const deleteBtn = document.getElementById('delete-latest-ai-btn');
+deleteBtn.addEventListener('click', async () => {
+    if (!confirm('Delete the most recent AI digest?\n\nThis removes the .md, .json, summary.txt, and cost_log entry. PDF (if any) is kept. This cannot be undone.')) {
+        return;
+    }
+    deleteBtn.disabled = true;
+    try {
+        const r = await fetch('/run/delete-latest-ai', { method: 'POST' });
+        const data = await r.json();
+        if (data.ok) {
+            alert('Deleted: ' + data.message);
+        } else {
+            alert('Could not delete: ' + data.message);
+        }
+        pollOnce();
+    } catch (e) {
+        alert('Delete failed: ' + e);
+    } finally {
+        deleteBtn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

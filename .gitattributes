@@ -1,0 +1,2 @@
+# Preserve exact resource/template bytes across checkouts for rendering regressions.
+* -text

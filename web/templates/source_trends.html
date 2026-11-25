@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Source trends — News Digest{% endblock %}
+
+{% block content %}
+<style>
+.trends-table { font-size: 10pt; }
+.trends-table th, .trends-table td { padding: 0.4em 0.7em; }
+.trends-table .source-cell { white-space: nowrap; font-weight: bold; }
+.trends-table td.count { text-align: right; }
+.trends-table td.count.zero { color: #c00; }
+.trends-table td.count.warn { color: #d68a00; }
+.trends-table thead th.run-col { font-size: 9pt; }
+</style>
+
+<h1>Source trends</h1>
+
+{% if not has_data %}
+<p>No scrape history available yet.</p>
+{% else %}
+
+<p style="color: #666; font-size: 10pt;">
+    Headline counts per source across the last {{ run_count }} scrape runs (most recent first).
+    Red = zero headlines. Orange = warning state at scrape time.
+</p>
+
+<table class="trends-table">
+    <thead>
+        <tr>
+            <th>Source</th>
+            {% for ts in run_timestamps %}
+            <th class="run-col">{{ ts }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for source, row in source_rows %}
+        <tr>
+            <td class="source-cell">{{ source }}</td>
+            {% for cell in row %}
+            <td class="count {% if cell.count == 0 %}zero{% elif cell.warning %}warn{% endif %}">
+                {% if cell.present %}{{ cell.count }}{% else %}—{% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+{% endblock %}

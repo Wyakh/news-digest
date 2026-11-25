@@ -1,0 +1,414 @@
+/* ============================================================
+   markdown-style.css
+   English (default) + Chinese (.chinese wrapper) styles
+   For use with VSCode Markdown PDF extension
+
+   HOW TO USE:
+   - English articles: paste Claude output as-is, no wrapper needed
+   - Chinese articles: wrap entire content in <div class="chinese"> ... </div>
+     Claude Project prompt will do this automatically for Chinese output
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   SECTION 1 — PAGE LAYOUT
+   Controls the overall page canvas: how wide the text column
+   is, how much white space surrounds it, and the base text
+   and background colors. Applies to both English and Chinese.
+   Adjust max-width to make the column wider or narrower.
+   ------------------------------------------------------------ */
+
+body {
+  max-width: 800px;       /* readable column width; increase for wider layout */
+  margin: 0 auto;         /* center the column on the page */
+  padding: 3em 2.5em;     /* top/bottom and left/right page margins */
+  color: #1a1a1a;         /* near-black body text; softer than pure #000 */
+  background: #ffffff;    /* white page background */
+}
+
+
+/* ============================================================
+   SECTION 2 — ENGLISH TYPOGRAPHY (default, no class needed)
+   These rules apply to all content unless overridden by the
+   .chinese class below. Designed for news article reading:
+   serif body font for comfort, sans-serif headings for contrast.
+   ============================================================ */
+
+/* --- 2a. English body text ---
+   Times New Roman is the primary choice; Georgia and Palatino
+   are fallbacks if TNR is unavailable on the system.
+   line-height: 1.85 gives comfortable spacing for long reads.
+   hyphens: auto breaks long words at line ends to avoid gaps
+   in justified text (requires the document language to be set). */
+body {
+  font-family: "Times New Roman", Georgia, "Palatino Linotype", serif;
+  font-size: 12.5pt;
+  line-height: 1.85;
+  text-align: justify;    /* both edges aligned, newspaper style */
+  hyphens: auto;
+  -webkit-hyphens: auto;  /* Safari/Chrome compatibility */
+}
+
+/* --- 2b. English H1 — article headline ---
+   Large, bold Arial. The thin bottom border visually separates
+   the headline from the article body, like a newspaper rule.
+   letter-spacing: -0.01em tightens large type slightly for
+   a more professional headline appearance. */
+h1 {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 22pt;
+  font-weight: bold;
+  line-height: 1.25;      /* tighter line height for multi-line headlines */
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1.5px solid #cccccc;  /* thin rule under the headline */
+  letter-spacing: -0.01em;
+}
+
+/* --- 2c. English H2 — section heading ---
+   Slightly smaller than H1 but same Arial family.
+   Top margin pushes it away from the preceding paragraph. */
+h2 {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 15pt;
+  font-weight: bold;
+  margin-top: 1.8em;
+  margin-bottom: 0.4em;
+  letter-spacing: -0.005em;
+}
+
+/* --- 2d. English H3 — sub-section heading ---
+   Bold italic Arial. The italic distinguishes it from H2
+   without needing a size change. */
+h3 {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 12.5pt;
+  font-weight: bold;
+  font-style: italic;
+  margin-top: 1.4em;
+  margin-bottom: 0.3em;
+}
+
+/* --- 2e. English H4/H5/H6 — minor headings ---
+   Small caps treatment (uppercase + letter-spacing) gives these
+   a label-like appearance, useful for datelines, tags, or
+   minor section dividers in long articles. */
+h4, h5, h6 {
+  font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 11pt;
+  font-weight: bold;
+  margin-top: 1.2em;
+  margin-bottom: 0.3em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- 2f. English paragraph ---
+   orphans/widows: 3 prevents isolated lines at the top or
+   bottom of a page (PDF pagination). A single orphaned line
+   looks broken in printed output. */
+p {
+  margin-top: 0;
+  margin-bottom: 0.9em;
+  orphans: 3;             /* min lines kept at bottom of page */
+  widows: 3;              /* min lines kept at top of next page */
+}
+
+/* --- 2g. English drop cap ---
+   Enlarges the first letter of the paragraph immediately
+   following a H1, floated left so text wraps around it.
+   This is a classic newspaper/magazine opening convention.
+   Remove this entire block if you find it distracting. 
+h1 + p::first-letter {
+  font-size: 2.8em;
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  float: left;
+  line-height: 0.85;
+  margin-right: 0.08em;
+  margin-top: 0.05em;
+  color: #333333;
+} */
+
+/* --- 2h. English blockquote ---
+   Used for pull quotes, source quotations, or extended
+   citations. Left border and italic style distinguish it
+   from body text. In Markdown, use > to trigger this. */
+blockquote {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 12pt;
+  font-style: italic;
+  border-left: 3px solid #aaaaaa;
+  margin: 1.5em 1em;
+  padding: 0.3em 1.2em;
+  color: #444444;         /* slightly lighter than body text */
+}
+
+/* --- 2i. Byline / dateline inside blockquote ---
+   If you write > *By John Smith* in Markdown, the <em> inside
+   the blockquote gets this style: upright (not italic), small,
+   and light gray — matching a newspaper byline appearance. */
+blockquote em {
+  font-style: normal;
+  font-size: 10.5pt;
+  color: #777777;
+  letter-spacing: 0.03em;
+}
+
+/* --- 2j. Inline emphasis --- */
+strong {
+  font-weight: bold;
+}
+
+em {
+  font-style: italic;
+}
+
+/* --- 2k. Horizontal rule — section divider ---
+   A centered short line (40% of column width) used as a
+   visual break between major sections. In Markdown, use ---. */
+hr {
+  border: none;
+  border-top: 1px solid #cccccc;
+  margin: 2em auto;
+  width: 40%;             /* short centered rule, not full width */
+}
+
+/* --- 2l. Hyperlinks ---
+   Underline is replaced by a subtle bottom border so links
+   are recognisable but not visually heavy in dense text. */
+a {
+  color: #1a4a8a;
+  text-decoration: none;
+  border-bottom: 1px solid #aaaacc;
+}
+
+/* --- 2m. Inline code ---
+   For short code fragments within a sentence. Light gray
+   background and monospace font distinguish it from body text. */
+code {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10.5pt;
+  background: #f4f4f4;
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
+}
+
+/* --- 2n. Code blocks (fenced or indented) ---
+   For multi-line code. Left border accent matches blockquote
+   style for visual consistency. overflow-x allows horizontal
+   scroll if a code line is very long. */
+pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10pt;
+  background: #f4f4f4;
+  padding: 1em;
+  border-left: 3px solid #cccccc;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+/* --- 2o. Lists ---
+   Standard bullet and numbered lists. padding-left indents
+   the list content; li margin-bottom adds breathing room
+   between list items. */
+ul, ol {
+  padding-left: 1.8em;
+  margin-bottom: 0.9em;
+}
+
+li {
+  margin-bottom: 0.3em;
+}
+
+/* --- 2p. Tables ---
+   Full-width, collapsed borders (no double lines between cells).
+   Header row uses Arial + uppercase for a label-like appearance.
+   Row borders are light gray lines only at the bottom of each cell. */
+table {
+  width: 100%;
+  border-collapse: collapse;  /* removes gaps between cell borders */
+  font-size: 11pt;
+  margin: 1.5em 0;
+}
+
+th {
+  font-family: "Arial", sans-serif;
+  font-weight: bold;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #666666;  /* stronger line under header row */
+  padding: 0.5em 0.8em;
+  text-align: left;
+}
+
+td {
+  border-bottom: 1px solid #dddddd;  /* light separator between rows */
+  padding: 0.45em 0.8em;
+  vertical-align: top;               /* top-align for multi-line cells */
+}
+
+/* --- 2q. Images ---
+   Centered block display with auto margins. max-width: 100%
+   prevents images from overflowing the column. */
+img {
+  max-width: 100%;
+  display: block;
+  margin: 1.5em auto;
+}
+
+
+/* ============================================================
+   SECTION 3 — CHINESE TYPOGRAPHY OVERRIDES (.chinese class)
+
+   All rules here are prefixed with .chinese so they ONLY apply
+   when the content is wrapped in <div class="chinese">...</div>.
+   Each rule overrides its English equivalent above, adapting
+   to Chinese typographic conventions:
+     - 宋体 body / 黑体 headings (instead of TNR / Arial)
+     - Larger line-height (CJK needs more vertical breathing room)
+     - First-line indent instead of blank line between paragraphs
+     - No italic (CJK fonts render fake italic poorly)
+     - No hyphenation, word-break at any character boundary
+     - No drop cap (not a Chinese convention)
+   ============================================================ */
+
+/* --- 3a. Chinese body text ---
+   宋体 (SimSun/STSong) is the standard Chinese serif font,
+   equivalent in status to Times New Roman for English news.
+   line-height: 2.1 is standard for Chinese body text —
+   CJK square characters feel cramped at Western line heights.
+   text-justify: inter-ideograph distributes space evenly
+   between characters in justified lines (CSS standard for CJK).
+   word-break: break-all allows line breaks between any two
+   characters, which is correct for CJK (no spaces between words). */
+.chinese {
+  font-family: "宋体", "SimSun", "STSong", "Songti SC", serif;
+  font-size: 12pt;
+  line-height: 2.1;
+  text-align: justify;
+  text-justify: inter-ideograph;  /* CJK-specific justification */
+  -webkit-hyphens: none;
+  hyphens: none;                  /* no hyphenation in Chinese */
+  word-break: break-all;          /* break at any character (CJK has no spaces) */
+  overflow-wrap: break-word;
+}
+
+/* --- 3b. Chinese H1 — article headline ---
+   黑体 (SimHei/STHeiti) is the standard Chinese sans-serif,
+   equivalent in role to Arial for English headlines.
+   font-style: normal explicitly prevents fake italic,
+   which renders as ugly slanted strokes in most CJK fonts.
+   letter-spacing: 0.05em adds slight spacing between characters,
+   a common style in Chinese editorial headlines. */
+.chinese h1 {
+  font-family: "黑体", "SimHei", "STHeiti", "Heiti SC", sans-serif;
+  font-size: 20pt;
+  font-weight: bold;
+  line-height: 1.4;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1.5px solid #cccccc;
+  font-style: normal;             /* never italic in Chinese headings */
+}
+
+/* --- 3c. Chinese H2 — section heading --- */
+.chinese h2 {
+  font-family: "黑体", "SimHei", "STHeiti", "Heiti SC", sans-serif;
+  font-size: 14pt;
+  font-weight: bold;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  margin-top: 1.8em;
+  font-style: normal;
+}
+
+/* --- 3d. Chinese H3 — sub-section heading ---
+   No italic here, unlike the English H3. Chinese sub-headings
+   are distinguished by weight and size only, not style. */
+.chinese h3 {
+  font-family: "黑体", "SimHei", "STHeiti", "Heiti SC", sans-serif;
+  font-size: 12pt;
+  font-weight: bold;
+  font-style: normal;             /* avoid fake italic on CJK fonts */
+  letter-spacing: 0.04em;
+  margin-top: 1.4em;
+}
+
+/* --- 3e. Chinese H4/H5/H6 — minor headings ---
+   text-transform: none overrides the English uppercase rule —
+   uppercase transformation is meaningless for Chinese characters. */
+.chinese h4,
+.chinese h5,
+.chinese h6 {
+  font-family: "黑体", "SimHei", "STHeiti", "Heiti SC", sans-serif;
+  font-size: 11pt;
+  font-weight: bold;
+  font-style: normal;
+  text-transform: none;           /* uppercase is meaningless for Chinese */
+  letter-spacing: 0.04em;
+}
+
+/* --- 3f. Disable drop cap for Chinese ---
+   all: unset removes every property the English drop cap rule
+   set, so the first character renders as normal body text.
+   Drop caps are a Western typographic convention not used
+   in Chinese news or publishing. */
+.chinese h1 + p::first-letter {
+  all: unset;
+}
+
+/* --- 3g. Chinese paragraph ---
+   text-indent: 2em is the standard Chinese paragraph convention:
+   indent the first line by exactly two character widths.
+   Chinese articles do NOT use blank lines between paragraphs
+   (margin-bottom is kept small for this reason). */
+.chinese p {
+  text-indent: 2em;               /* standard Chinese paragraph indent: 2 character widths */
+  margin-bottom: 0.5em;
+}
+
+/* --- 3h. Chinese blockquote ---
+   font-style: normal overrides the English italic blockquote —
+   italic is avoided in Chinese text throughout.
+   line-height: 2.0 maintains CJK breathing room inside quotes. */
+.chinese blockquote {
+  font-family: "宋体", "SimSun", "STSong", "Songti SC", serif;
+  font-style: normal;             /* no italic for Chinese */
+  font-size: 11.5pt;
+  border-left: 3px solid #aaaaaa;
+  margin: 1.5em 1em;
+  padding: 0.3em 1.2em;
+  color: #444444;
+  line-height: 2.0;
+}
+
+/* --- 3i. Chinese table header ---
+   Overrides the English uppercase + wide letter-spacing rule,
+   which is designed for Latin characters and is inappropriate
+   for Chinese. 黑体 provides sufficient visual weight for headers. */
+.chinese th {
+  font-family: "黑体", "SimHei", "STHeiti", "Heiti SC", sans-serif;
+  text-transform: none;           /* no uppercase transformation for Chinese */
+  letter-spacing: 0.03em;
+}
+
+/* --- 3j. Chinese code blocks ---
+   Code is always in Latin/ASCII, so monospace font is kept
+   regardless of language context. Font size is explicitly set
+   to prevent inheritance of the Chinese body font. */
+.chinese code,
+.chinese pre {
+  font-family: "Courier New", Courier, monospace;  /* always monospace for code */
+  font-size: 10pt;
+}
+
+/* --- 3k. Chinese horizontal rule ---
+   Slightly shorter than the English rule (30% vs 40%) to
+   suit the denser visual rhythm of Chinese text layouts. */
+.chinese hr {
+  width: 30%;
+}

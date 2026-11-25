@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}News Digest — All digests{% endblock %}
+
+{% block content %}
+<h1>All digests</h1>
+
+{% if digests %}
+<ul>
+    {% for d in digests %}
+    <li>
+        <a href="{{ url_for('digest', run_id=d.run_id) }}">
+            {{ d.dt.strftime('%Y-%m-%d %H:%M') }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No digests found in <code>data/digests/</code>.</p>
+{% endif %}
+{% endblock %}

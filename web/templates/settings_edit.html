@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ filename }} — Settings{% endblock %}
+{% block content %}
+<div class="settings-edit">
+  <p class="breadcrumb">
+    <a href="{{ url_for('settings_index') }}">← All settings</a>
+    &nbsp;|&nbsp;
+    <a href="{{ url_for('settings_backups', file_key=file_key) }}">View backups</a>
+  </p>
+  <h1>{{ filename }}</h1>
+  <p class="desc">{{ description }}</p>
+
+  {% if saved %}
+    <div class="flash success">Saved. A backup of the previous version was created.</div>
+  {% endif %}
+
+  {% if restore_label %}
+    <div class="flash info">
+      Loaded from backup <strong>{{ restore_label }}</strong>. Click <strong>Save</strong>
+      below to commit it (current contents will be backed up first).
+    </div>
+  {% endif %}
+
+  {% if error %}
+    <div class="flash error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('settings_save', file_key=file_key) }}">
+    <div class="editor-wrap">
+      <div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
+      <textarea name="content" class="editor" id="editor" spellcheck="false">{{ content }}</textarea>
+    </div>
+    <div class="actions">
+      <button type="submit">Save</button>
+      <a href="{{ url_for('settings_edit', file_key=file_key) }}" class="cancel">Cancel / reload from disk</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .settings-edit { max-width: 1000px; margin: 0 auto; padding: 0 2em; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #222; }
+  .settings-edit h1 { font-size: 14pt; font-family: Consolas, "Courier New", monospace; margin: 0.3em 0; }
+  .breadcrumb { font-size: 10pt; }
+  .breadcrumb a { color: #1a4a8a; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .desc { font-size: 10pt; color: #555; margin-bottom: 1em; }
+  .flash {
+    padding: 0.6em 1em; margin: 0.8em 0;
+    font-size: 10pt; border-radius: 3px;
+  }
+  .flash.success { background: #e7f5e7; border-left: 3px solid #4a8a4a; color: #2a5a2a; }
+  .flash.info    { background: #eef4fb; border-left: 3px solid #1a4a8a; color: #1a4a8a; }
+  .flash.error   {
+    background: #fbeeee; border-left: 3px solid #aa3333;
+    color: #882222; white-space: pre-wrap;
+    font-family: Consolas, "Courier New", monospace;
+  }
+
+  /* Editor with synced line-number gutter.
+     Both children share font/line-height; gutter scrolls with the textarea
+     via a JS scroll listener (overflow:hidden on the gutter, programmatic
+     scrollTop). */
+  .editor-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: white;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 10pt;
+    line-height: 1.5;
+    /* Makes resize:vertical on the textarea drag the whole wrapper visually. */
+    min-height: 600px;
+  }
+  .line-numbers {
+    flex: 0 0 auto;
+    min-width: 3em;
+    padding: 0.8em 0.5em 0.8em 0.6em;
+    margin: 0;
+    text-align: right;
+    color: #999;
+    background: #f6f6f6;
+    border-right: 1px solid #e2e2e2;
+    overflow: hidden;
+    white-space: pre;
+    user-select: none;
+    /* Inherit font / line-height from .editor-wrap so numbers align with
+       textarea rows pixel-for-pixel. */
+    font: inherit;
+    line-height: inherit;
+    box-sizing: border-box;
+  }
+  .editor {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 600px;
+    padding: 0.8em;
+    margin: 0;
+    border: none;
+    outline: none;
+    resize: vertical;
+    background: transparent;
+    color: #222;
+    font: inherit;
+    line-height: inherit;
+    tab-size: 2;
+    box-sizing: border-box;
+    overflow-y: auto;
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  .actions { margin-top: 0.8em; }
+  .actions button {
+    padding: 0.5em 1.4em; font-size: 10pt;
+    background: #1a4a8a; color: white; border: none;
+    border-radius: 3px; cursor: pointer;
+  }
+  .actions button:hover { background: #15396a; }
+  .actions .cancel {
+    margin-left: 1em; font-size: 10pt; color: #888;
+    text-decoration: none;
+  }
+  .actions .cancel:hover { color: #555; text-decoration: underline; }
+</style>
+
+<script>
+(function () {
+  var ed = document.getElementById('editor');
+  var ln = document.getElementById('lineNumbers');
+  if (!ed || !ln) return;
+
+  function renderLineNumbers() {
+    // textarea.value uses '\n' regardless of platform.
+    var lineCount = ed.value.split('\n').length;
+    if (lineCount < 1) lineCount = 1;
+    var parts = new Array(lineCount);
+    for (var i = 0; i < lineCount; i++) parts[i] = (i + 1);
+    ln.textContent = parts.join('\n');
+  }
+
+  function syncScroll() {
+    // Programmatic scroll works on the gutter even with overflow:hidden.
+    ln.scrollTop = ed.scrollTop;
+  }
+
+  ed.addEventListener('input', function () {
+    renderLineNumbers();
+    // Re-sync because adding/removing lines can shift visible offset.
+    syncScroll();
+  });
+  ed.addEventListener('scroll', syncScroll);
+
+  renderLineNumbers();
+  syncScroll();
+})();
+</script>
+{% endblock %}

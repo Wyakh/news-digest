@@ -1,0 +1,23 @@
+{
+  "openai_api_key": "",
+  "anthropic_api_key": "",
+  "models": {
+    "batch": "gpt-6.2-sol",
+    "synthesis": "gpt-6.2-sol",
+    "writer": "gpt-6.2-sol"
+  },
+  "llm_settings": {
+    "batch": {
+      "max_tokens": 30000,
+      "reasoning_effort": "low"
+    },
+    "synthesis": {
+      "max_tokens": 30000,
+      "reasoning_effort": "medium"
+    },
+    "writer": {
+      "max_tokens": 30000,
+      "reasoning_effort": "medium"
+    }
+  }
+}

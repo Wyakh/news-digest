@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Inspect — News Digest{% endblock %}
+
+{% block content %}
+<h1>Inspect</h1>
+
+<h2>Pages</h2>
+<ul>
+    <li><a href="{{ url_for('headlines_page') }}">Headlines</a> — filter and browse the latest scrape's headline list.</li>
+    <li><a href="{{ url_for('source_trends_page') }}">Source trends</a> — per-source headline counts across recent scrape runs.</li>
+</ul>
+
+<h2>Per-run raw data</h2>
+<p>From any digest's render page, use the <strong>View raw structured data</strong> link in the top bar to inspect that run's synthesizer output.</p>
+{% endblock %}

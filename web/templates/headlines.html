@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}Headlines — News Digest{% endblock %}
+
+{% block content %}
+<style>
+.filter-form {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    padding: 1em 1.2em;
+    margin: 1em 0;
+    border-radius: 3px;
+    font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 11pt;
+}
+.filter-form .filter-row { margin-bottom: 0.6em; }
+.filter-form label { display: inline-block; margin-right: 1.2em; }
+.filter-form .field-group {
+    border-top: 1px dashed #ccc;
+    padding-top: 0.6em;
+    margin-top: 0.6em;
+}
+.filter-form .field-group h3 {
+    margin: 0 0 0.4em 0;
+    border: none;
+    font-size: 11pt;
+    color: #333;
+}
+.filter-form .sub-label {
+    display: inline-block;
+    width: 13em;
+    color: #555;
+    font-size: 10.5pt;
+    vertical-align: top;
+}
+.filter-form select,
+.filter-form input[type="text"] {
+    font-size: 10pt;
+    padding: 0.2em 0.4em;
+}
+.filter-form input[type="text"] { width: 28em; }
+.filter-form select[multiple] {
+    width: 22em;
+    min-height: 7em;
+}
+.filter-form .hint {
+    color: #888;
+    font-size: 9.5pt;
+    margin-left: 13em;
+    margin-top: 0.2em;
+}
+.filter-form button {
+    padding: 0.4em 1em;
+    font-size: 10.5pt;
+    background: #f4f4f4;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-right: 0.4em;
+}
+.filter-form button:hover { background: #e8e8e8; }
+.headline-count {
+    margin-top: 0.6em;
+    color: #555;
+    font-size: 10pt;
+}
+.headline-count a { font-size: 10pt; }
+table.headlines th { cursor: pointer; user-select: none; }
+table.headlines th.sort-asc::after  { content: " ▲"; color: #888; }
+table.headlines th.sort-desc::after { content: " ▼"; color: #888; }
+table.headlines td.title-cell,
+table.headlines td.title-cell a { font-size: 10pt; }
+table.headlines td.media-cell,
+table.headlines td.section-cell,
+table.headlines td.time-cell,
+table.headlines td.hid-cell { font-size: 10pt; white-space: nowrap; }
+</style>
+
+<h1>Headlines</h1>
+
+{% if not has_data %}
+<p>No headlines available. Run the scraper first.</p>
+{% else %}
+
+<form method="get" class="filter-form">
+    <div class="filter-row">
+        <label>
+            Source:
+            <select name="media">
+                <option value="">All</option>
+                {% for m in all_media %}
+                <option value="{{ m }}" {% if filters.media == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            Language:
+            <select name="language">
+                <option value="" {% if not filters.language %}selected{% endif %}>All</option>
+                <option value="EN" {% if filters.language == 'EN' %}selected{% endif %}>EN</option>
+                <option value="ZH" {% if filters.language == 'ZH' %}selected{% endif %}>ZH</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="field-group">
+        <h3>Section</h3>
+        <div class="filter-row">
+            <span class="sub-label">Contains:</span>
+            <input type="text" name="section_contains" value="{{ filters.section_contains }}">
+        </div>
+        <div class="filter-row">
+            <span class="sub-label">Match any of:</span>
+            <select name="section_match" multiple size="7">
+                <option value="">(none — click to clear)</option>
+                {% for s in all_sections %}
+                <option value="{{ s }}" {% if s in filters.section_match %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="hint">{{ all_sections|length }} distinct section(s). Hold Ctrl/Cmd to select multiple. Case-insensitive.</div>
+    </div>
+
+    <div class="field-group">
+        <h3>Title</h3>
+        <div class="filter-row">
+            <span class="sub-label">Contains any of:</span>
+            <input type="text" name="title_patterns" value="{{ filters.title_patterns }}" placeholder='"keyword1", "keyword2", "keyword3"'>
+        </div>
+        <div class="hint">
+            Comma-separated patterns. A headline is shown if its title contains any one pattern (case-insensitive substring). Quotes around each pattern are optional.
+            Example: <code>"Iran", "Hormuz", "Tehran"</code> or <code>Iran, Hormuz, Tehran</code>
+        </div>
+    </div>
+
+    <div class="filter-row" style="margin-top: 1em;">
+        <button type="submit">Apply</button>
+        <a href="{{ url_for('headlines_page') }}" style="margin-left: 0.4em; font-size: 10pt;">Clear</a>
+    </div>
+
+    <div class="headline-count">
+        {% if filtered_count > default_limit %}
+            {% if show_all %}
+                Showing all {{ displayed_count }} of {{ total_count }} scraped headlines
+                — <a href="{{ default_url }}">show first {{ default_limit }}</a>
+            {% else %}
+                Showing first {{ displayed_count }}/{{ filtered_count }} matched headlines (of {{ total_count }} total)
+                — <a href="{{ show_all_url }}">show all</a>
+            {% endif %}
+        {% else %}
+            Showing {{ filtered_count }} of {{ total_count }} headlines
+        {% endif %}
+        {% if scrape_timestamp %}
+            · latest scrape: {{ scrape_timestamp }}
+        {% endif %}
+    </div>
+</form>
+
+{% if headlines %}
+<table class="headlines">
+    <thead>
+        <tr>
+            <th data-col="hid">H-ID</th>
+            <th data-col="media">Source</th>
+            <th data-col="title">Title</th>
+            <th data-col="section">Section</th>
+            <th data-col="time">Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for h in headlines %}
+        <tr>
+            <td class="hid-cell">{{ h.h_id if h.h_id is not none else '' }}</td>
+            <td class="media-cell">
+                {{ h.media }}{% if h.homepage %} <span style="color:#888;">[home]</span>{% endif %}
+            </td>
+            <td class="title-cell">
+                <a href="{{ h.url }}" target="_blank" rel="noopener">{{ h.title }}</a>
+            </td>
+            <td class="section-cell">{{ h.section or '' }}</td>
+            <td class="time-cell">{{ h.time or '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No headlines match these filters.</p>
+{% endif %}
+
+<script>
+document.querySelectorAll('table.headlines th').forEach(th => {
+    th.addEventListener('click', () => {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        const idx = Array.from(th.parentNode.children).indexOf(th);
+        const wasAsc = th.classList.contains('sort-asc');
+        table.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add(wasAsc ? 'sort-desc' : 'sort-asc');
+        const dir = wasAsc ? -1 : 1;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const av = a.children[idx].innerText.trim();
+            const bv = b.children[idx].innerText.trim();
+            if (th.dataset.col === 'hid') {
+                return (parseInt(av || '0') - parseInt(bv || '0')) * dir;
+            }
+            return av.localeCompare(bv) * dir;
+        });
+        rows.forEach(r => tbody.appendChild(r));
+    });
+});
+</script>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block title %}Notes — News Digest{% endblock %}
+{% block content %}
+<div class="notes-page">
+  <h1>Notes</h1>
+  <p class="intro">
+    All continuity chains with at least one editorial note.
+    Sorted by latest associated story run (most recent on top).
+  </p>
+
+  <form method="GET" action="{{ url_for('notes_page') }}" class="notes-toolbar">
+    <input type="text" name="q" value="{{ query|default('') }}"
+           placeholder="Search comment text…" class="search-box">
+    <label class="filter-toggle">
+      <input type="checkbox" name="starred_only" value="1"
+             {% if starred_only %}checked{% endif %}>
+      Starred only
+    </label>
+    <button type="submit">Apply</button>
+    {% if query or starred_only %}
+      <a href="{{ url_for('notes_page') }}" class="clear-link">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if not rows %}
+    <p class="empty">
+      {% if query or starred_only %}
+        No notes match the current filter.
+      {% else %}
+        No notes yet. Add one from any digest's story heading.
+      {% endif %}
+    </p>
+  {% else %}
+    <div class="row-list">
+      {% for row in rows %}
+        <div class="chain-row">
+          <div class="row-header">
+            <form method="POST" action="{{ url_for('chain_star_toggle', chain_id=row.chain_id) }}" class="star-form">
+              <input type="hidden" name="return_to" value="{{ return_to_url }}">
+              <button type="submit" class="star-btn {% if row.is_starred %}starred{% endif %}"
+                      title="{% if row.is_starred %}Unstar{% else %}Star{% endif %}">
+                {% if row.is_starred %}★{% else %}☆{% endif %}
+              </button>
+            </form>
+            <div class="row-title">
+              {% if row.latest_run_id %}
+                <a href="{{ url_for('digest', run_id=row.latest_run_id) }}#chain-{{ row.chain_id }}">{{ row.latest_title }}</a>
+              {% else %}
+                <span class="orphan">{{ row.latest_title }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="row-meta">
+            {% if row.latest_tags %}
+              <span class="tags">
+                {% for t in row.latest_tags %}<span class="tag">{{ t }}</span>{% endfor %}
+              </span>
+            {% endif %}
+            <span class="count">{{ row.comment_count }} note{{ '' if row.comment_count == 1 else 's' }}</span>
+            <span class="latest-run">latest run {{ row.latest_run_id or '—' }}</span>
+          </div>
+
+          {# Preview note: most recent by associated story run, fully rendered with edit form #}
+          {% if row.preview_comment %}
+            {% set pc = row.preview_comment %}
+            <div class="comment-block preview">
+              <div class="comment-text">{{ pc.text }}</div>
+              <div class="comment-meta">
+                created
+                {% if pc.created_run_id %}
+                  <a href="{{ url_for('digest', run_id=pc.created_run_id) }}#chain-{{ row.chain_id }}">{{ pc.created_at }}</a>
+                {% else %}
+                  {{ pc.created_at }}
+                {% endif %}
+                {% if pc.edited_at and pc.edited_at != pc.created_at %}
+                  &middot; edited {{ pc.edited_at }}
+                {% endif %}
+              </div>
+              <details class="comment-edit">
+                <summary>Edit</summary>
+                <form method="POST" action="{{ url_for('comments_edit', comment_id=pc.id) }}">
+                  <input type="hidden" name="return_to" value="{{ return_to_url }}">
+                  <textarea name="text" required>{{ pc.text }}</textarea>
+                  <button type="submit">Save</button>
+                </form>
+              </details>
+              <form method="POST" action="{{ url_for('comments_delete', comment_id=pc.id) }}"
+                    class="comment-delete"
+                    onsubmit="return confirm('Delete this note? This cannot be undone.');">
+                <input type="hidden" name="return_to" value="{{ return_to_url }}">
+                <button type="submit">Delete</button>
+              </form>
+            </div>
+          {% endif %}
+
+          <div class="row-buttons">
+            {% if row.past_comments %}
+              <details class="expand-notes">
+                <summary>Past notes ({{ row.past_comments|length }})</summary>
+                <div class="expanded-content">
+                  {% for c in row.past_comments %}
+                    <div class="comment-block">
+                      <div class="comment-text">{{ c.text }}</div>
+                      <div class="comment-meta">
+                        created
+                        {% if c.created_run_id %}
+                          <a href="{{ url_for('digest', run_id=c.created_run_id) }}#chain-{{ row.chain_id }}">{{ c.created_at }}</a>
+                        {% else %}
+                          {{ c.created_at }}
+                        {% endif %}
+                        {% if c.edited_at and c.edited_at != c.created_at %}
+                          &middot; edited {{ c.edited_at }}
+                        {% endif %}
+                      </div>
+                      <details class="comment-edit">
+                        <summary>Edit</summary>
+                        <form method="POST" action="{{ url_for('comments_edit', comment_id=c.id) }}">
+                          <input type="hidden" name="return_to" value="{{ return_to_url }}">
+                          <textarea name="text" required>{{ c.text }}</textarea>
+                          <button type="submit">Save</button>
+                        </form>
+                      </details>
+                      <form method="POST" action="{{ url_for('comments_delete', comment_id=c.id) }}"
+                            class="comment-delete"
+                            onsubmit="return confirm('Delete this note? This cannot be undone.');">
+                        <input type="hidden" name="return_to" value="{{ return_to_url }}">
+                        <button type="submit">Delete</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                </div>
+              </details>
+            {% endif %}
+
+            {% if row.sources %}
+              <details class="expand-sources">
+                <summary>Sources ({{ row.sources|length }})</summary>
+                <div class="expanded-content">
+                  <ul class="source-list">
+                    {% for src in row.sources %}
+                      <li>
+                        <a href="{{ src.url }}" target="_blank" rel="noopener noreferrer">{{ src.media }}</a>
+                        &mdash; {{ src.title }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </details>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .notes-page { max-width: 900px; margin: 0 auto; padding: 0 2.5em; font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; color: #222; }
+  .notes-page h1 { font-size: 18pt; margin-bottom: 0.3em; }
+  .notes-page .intro { font-size: 10pt; color: #555; margin-bottom: 1em; }
+  .notes-page .empty { color: #888; font-style: italic; margin-top: 2em; }
+
+  .notes-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    padding: 0.6em 0;
+    margin-bottom: 1em;
+    border-bottom: 1px solid #eee;
+  }
+  .notes-toolbar .search-box {
+    flex: 1 1 auto;
+    padding: 0.5em 0.7em;
+    font-size: 10pt;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  .notes-toolbar .filter-toggle {
+    font-size: 10pt;
+    color: #555;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .notes-toolbar button {
+    padding: 0.5em 1em;
+    background: #1a4a8a;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-size: 10pt;
+    cursor: pointer;
+  }
+  .notes-toolbar button:hover { background: #15396a; }
+  .notes-toolbar .clear-link {
+    font-size: 9pt;
+    color: #888;
+    text-decoration: none;
+  }
+  .notes-toolbar .clear-link:hover { color: #555; text-decoration: underline; }
+
+  .row-list { margin-top: 0.5em; }
+  .chain-row {
+    border-bottom: 1px solid #eee;
+    padding: 1em 0;
+  }
+
+  .row-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+    margin-bottom: 0.3em;
+  }
+  .star-form { margin: 0; }
+  .star-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14pt;
+    color: #ccc;
+    padding: 0 0.2em;
+    line-height: 1;
+  }
+  .star-btn:hover { color: #d4a900; }
+  .star-btn.starred { color: #d4a900; }
+
+  .row-title {
+    font-size: 11pt;
+    font-weight: bold;
+    flex: 1 1 auto;
+  }
+  .row-title a { color: #1a4a8a; text-decoration: none; }
+  .row-title a:hover { text-decoration: underline; }
+  .row-title .orphan { color: #888; font-style: italic; }
+
+  .row-meta {
+    font-size: 9pt;
+    color: #777;
+    margin: 0.2em 0 0.6em 1.7em;
+  }
+  .row-meta .tags { margin-right: 0.8em; }
+  .row-meta .tag {
+    display: inline-block;
+    background: #eef2f7;
+    color: #1a4a8a;
+    padding: 0.05em 0.5em;
+    margin-right: 0.3em;
+    border-radius: 8px;
+    font-size: 8.5pt;
+  }
+  .row-meta .count {
+    margin-right: 0.8em;
+    color: #555;
+    font-weight: bold;
+  }
+  .row-meta .latest-run {
+    color: #999;
+    font-family: Consolas, "Courier New", monospace;
+  }
+
+  .comment-block {
+    margin-left: 1.7em;
+    padding: 0.6em 0.9em;
+    background: #f9f9f9;
+    border-left: 3px solid #d0d0d0;
+    border-radius: 3px;
+    font-size: 9.5pt;
+    color: #333;
+  }
+  .comment-block.preview {
+    border-left-color: #1a4a8a;
+    background: #f4f7fc;
+  }
+  .comment-block + .comment-block {
+    margin-top: 0.4em;
+  }
+  .comment-text {
+    white-space: pre-wrap;
+    margin-bottom: 0.3em;
+  }
+  .comment-meta {
+    font-size: 8.5pt;
+    color: #888;
+  }
+  .comment-meta a { color: #1a4a8a; text-decoration: none; }
+  .comment-meta a:hover { text-decoration: underline; }
+
+  .comment-edit { display: inline-block; margin-top: 0.3em; }
+  .comment-edit summary {
+    cursor: pointer;
+    color: #1a4a8a;
+    font-size: 9pt;
+    user-select: none;
+  }
+  .comment-edit textarea {
+    display: block;
+    width: 100%;
+    min-height: 70px;
+    margin: 0.4em 0;
+    padding: 0.5em;
+    box-sizing: border-box;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    resize: vertical;
+  }
+  .comment-edit button {
+    padding: 0.3em 0.9em;
+    font-size: 9pt;
+    background: #1a4a8a;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .comment-edit button:hover { background: #15396a; }
+
+  .comment-delete {
+    display: inline-block;
+    margin-left: 0.6em;
+    margin-top: 0.3em;
+  }
+  .comment-delete button {
+    padding: 0.2em 0.6em;
+    font-size: 8.5pt;
+    background: #aa3333;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .comment-delete button:hover { background: #882222; }
+
+  .row-buttons {
+    margin-left: 1.7em;
+    margin-top: 0.5em;
+    display: flex;
+    gap: 0.6em;
+    flex-wrap: wrap;
+  }
+  .row-buttons details {
+    flex: 1 1 100%;
+  }
+  .row-buttons summary {
+    cursor: pointer;
+    color: #1a4a8a;
+    font-size: 9.5pt;
+    padding: 0.3em 0.7em;
+    background: #f0f4f9;
+    border-radius: 3px;
+    display: inline-block;
+    user-select: none;
+    width: auto;
+  }
+  .row-buttons summary:hover { background: #e3ebf4; }
+  .row-buttons details[open] summary {
+    background: #d8e3ef;
+    margin-bottom: 0.5em;
+  }
+
+  .expanded-content {
+    padding: 0.5em 0;
+  }
+  .source-list {
+    margin: 0; padding-left: 1.5em;
+    font-size: 9.5pt; color: #444; line-height: 1.6;
+  }
+  .source-list a { color: #1a4a8a; text-decoration: none; }
+  .source-list a:hover { text-decoration: underline; }
+</style>
+{% endblock %}

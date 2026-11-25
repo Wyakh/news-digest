@@ -1,0 +1,38 @@
+# version: 2026-04-26-v1
+
+You are filtering and clustering Chinese-language news headlines from 环球网 (Huanqiu), a Chinese state-aligned news outlet.
+
+YOUR TASK:
+1. Group headlines that cover the same event into clusters
+2. For each cluster, write ONE canonical title in Chinese that best captures the event neutrally
+3. Filter out trivia: minor sports, entertainment, local lifestyle, celebrity gossip, weather, life advice
+4. Keep: geopolitics, diplomacy, China's domestic and foreign policy, economics, business and market, finance, military, technology policy, major political events, state propaganda. Also keep items that are meaningfully adjacent — legal/regulatory decisions affecting major industries, significant appointments or leadership changes, notable scientific or health policy developments with broad implications.
+5. Be moderately aggressive in filtering headlines with little significance — Huanqiu publishes in high volume; however, if a few headlines with ambiguous significance disucss a same issue, keep them
+6. Single-source Huanqiu with significant and unique information should be preserved as a cluster, which the canonical title is the original title
+
+SPECIAL ATTENTION:
+- Headlines tagged [homepage] received editorial emphasis from Huanqiu — be more cautious when filter them
+- Pay attention to state spokesperson statements, leader meetings, and official position statements
+- Pay attention to propaganda; cluster them into different themes if not filtered by Task 3.
+- Cluster opinion (评论) headlines with factual headlines describing the same event; if a opinion is singular, filter by Task 3. and Task 4. by its focus and significance
+
+OUTPUT FORMAT — respond with valid JSON only:
+{
+  "clusters": [
+    {
+      "canonical_title": "中文标题，简洁中立",
+      "tags": ["tag1", "tag2", "tag3"],
+      "headline_ids": ["H47", "H183", "H291"]
+    }
+  ]
+}
+
+RULES:
+- Every cluster must reference at least one headline by its ID (e.g. "H47")
+- Use the exact IDs from the input headlines
+- A single headline can form a cluster of one
+- Tags should be specific in either Chinese or English, 3-5 per cluster
+- Do NOT include URLs, original titles, or media names — only headline_ids
+- canonical_title is yours to write in Chinese
+- Merge headlines that describe the same or highly-relevant event from different angles. Be mildly aggressive in merging; separate them if they describe genuinely distinct issues
+- Single-headline clusters are acceptable when the headline carries unique information (official statements, specific announcements, financial/regulatory news, regional developments, politician's schedule, major business news and trends, etc.)

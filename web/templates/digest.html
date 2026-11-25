@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ run_id }} — News Digest{% endblock %}
+
+{% block content %}
+<style>
+  .comment-widget {
+    margin: 0.5em 0 1.5em 0;
+    padding: 0.6em 0.9em;
+    background: #f9f9f9;
+    border-left: 3px solid #d0d0d0;
+    border-radius: 3px;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 9.5pt;
+    color: #333;
+  }
+  .comment-widget .comment-list { margin-bottom: 0.6em; }
+  .comment-widget .comment-item {
+    padding: 0.5em 0;
+    border-bottom: 1px dotted #ddd;
+  }
+  .comment-widget .comment-item:last-child { border-bottom: none; }
+  .comment-widget .comment-text {
+    white-space: pre-wrap;
+    margin-bottom: 0.3em;
+  }
+  .comment-widget .comment-meta {
+    font-size: 8.5pt;
+    color: #888;
+  }
+  .comment-widget .comment-meta a {
+    color: #1a4a8a;
+    text-decoration: none;
+  }
+  .comment-widget .comment-meta a:hover { text-decoration: underline; }
+  .comment-widget details { margin-top: 0.4em; }
+  .comment-widget details summary {
+    cursor: pointer;
+    color: #1a4a8a;
+    font-size: 9pt;
+    user-select: none;
+  }
+  .comment-widget textarea {
+    display: block;
+    width: 100%;
+    min-height: 70px;
+    margin: 0.4em 0;
+    padding: 0.5em;
+    box-sizing: border-box;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.5pt;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    resize: vertical;
+  }
+  .comment-widget button {
+    padding: 0.3em 0.9em;
+    font-size: 9pt;
+    background: #1a4a8a;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .comment-widget button:hover { background: #15396a; }
+  .comment-widget .comment-delete {
+    display: inline-block;
+    margin-left: 0.6em;
+  }
+  .comment-widget .comment-delete button {
+    background: #aa3333;
+    font-size: 8.5pt;
+    padding: 0.2em 0.6em;
+  }
+  .comment-widget .comment-delete button:hover { background: #882222; }
+</style>
+
+<p style="text-align: right; font-size: 10pt; margin: 0 0 0.5em 0;">
+    <a href="{{ url_for('digest_raw', run_id=run_id) }}">View raw structured data →</a>
+</p>
+{{ html_content | safe }}
+{% endblock %}

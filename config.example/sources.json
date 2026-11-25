@@ -1,0 +1,201 @@
+{
+  "sources": [
+    {
+      "name": "Reuters",
+      "method": "reuters",
+      "enabled": false,
+      "sections": [
+        "world",
+        "business",
+        "markets",
+        "technology",
+        "legal",
+        "sustainability"
+      ],
+      "languages": [
+        "en"
+      ],
+      "sections_exclude": [
+        "SPORTS",
+        "LIFESTYLE"
+      ]
+    },
+    {
+      "name": "环球网-国际",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://world.huanqiu.com/",
+      "section_label": "国际",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-国内",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://china.huanqiu.com/",
+      "section_label": "国内",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-军事",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://mil.huanqiu.com/",
+      "section_label": "军事",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-台海",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://taiwan.huanqiu.com/",
+      "section_label": "台海",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-评论",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://opinion.huanqiu.com/",
+      "section_label": "评论",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-财经",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://finance.huanqiu.com/",
+      "section_label": "财经",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-科技",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://tech.huanqiu.com/",
+      "section_label": "科技",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "环球网-产业",
+      "method": "huanqiu",
+      "enabled": false,
+      "page_url": "https://capital.huanqiu.com/",
+      "section_label": "产业",
+      "languages": [
+        "zh"
+      ],
+      "max_age_hours": 48,
+      "sections_exclude": []
+    },
+    {
+      "name": "财新-经济",
+      "method": "caixin_sub",
+      "enabled": false,
+      "page_url": "https://economy.caixin.com/",
+      "section_label": "经济",
+      "languages": [
+        "zh"
+      ],
+      "sections_exclude": []
+    },
+    {
+      "name": "财新-金融",
+      "method": "caixin_sub",
+      "enabled": false,
+      "page_url": "https://finance.caixin.com/",
+      "section_label": "金融",
+      "languages": [
+        "zh"
+      ],
+      "sections_exclude": []
+    },
+    {
+      "name": "财新-政经",
+      "method": "caixin_sub",
+      "enabled": false,
+      "page_url": "https://china.caixin.com/",
+      "section_label": "政经",
+      "languages": [
+        "zh"
+      ],
+      "sections_exclude": []
+    },
+    {
+      "name": "财新-公司",
+      "method": "caixin_sub",
+      "enabled": false,
+      "page_url": "https://companies.caixin.com/",
+      "section_label": "公司",
+      "languages": [
+        "zh"
+      ],
+      "sections_exclude": []
+    },
+    {
+      "name": "Straits Times",
+      "method": "straitstimes",
+      "enabled": false,
+      "max_age_hours": 48,
+      "sections_exclude": [],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "name": "联合早报",
+      "method": "zaobao",
+      "enabled": false,
+      "max_age_hours": 48,
+      "target_sections": [
+        "news/world",
+        "news/china",
+        "news/sea",
+        "finance/world",
+        "finance/china"
+      ],
+      "languages": [
+        "zh"
+      ],
+      "sections_exclude": []
+    },
+    {
+      "name": "Financial Times",
+      "method": "ft",
+      "enabled": false,
+      "max_age_hours": 48,
+      "languages": [
+        "en"
+      ],
+      "sections_exclude": []
+    }
+  ]
+}
